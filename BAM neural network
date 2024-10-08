@@ -1,0 +1,915 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOnd0CQIyfTGzExuomOwD2Z",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/17YuvrajSehgal/COSC-4P02-PROJECT/blob/main/BAM%20neural%20network\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np"
+      ],
+      "metadata": {
+        "id": "rW-KTVVs5w3h"
+      },
+      "execution_count": 9,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART** **A** **BAM**"
+      ],
+      "metadata": {
+        "id": "sPz06a7Qg85U"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "def train_bam(a_patterns, b_patterns):\n",
+        "    \"\"\"\n",
+        "    Train a Bidirectional Associative Memory (BAM) by calculating the weight matrix.\n",
+        "\n",
+        "    Parameters:\n",
+        "    a_patterns (array-like): The set of input patterns (A) to be associated.\n",
+        "    b_patterns (array-like): The set of output patterns (B) to be associated with A.\n",
+        "\n",
+        "    Returns:\n",
+        "    W (numpy array): The weight matrix used to store associations between A and B patterns.\n",
+        "    \"\"\"\n",
+        "    # Initialize the weight matrix with zeros. The matrix size is (length of A patterns, length of B patterns)\n",
+        "    W = np.zeros((len(a_patterns[0]), len(b_patterns[0])))\n",
+        "\n",
+        "    # Loop over each pair of patterns from A and B\n",
+        "    for a, b in zip(a_patterns, b_patterns):\n",
+        "        # Perform the outer product between input pattern 'a' and output pattern 'b'\n",
+        "        # and add the result to the weight matrix W. This builds up associations across all pairs.\n",
+        "        W += np.outer(a, b)\n",
+        "\n",
+        "    # Return the trained weight matrix\n",
+        "    return W\n",
+        "\n",
+        "def recall_bam(input_pattern, weight_matrix, threshold=0):\n",
+        "    \"\"\"\n",
+        "    Recall a pattern using the BAM weight matrix.\n",
+        "\n",
+        "    Parameters:\n",
+        "    input_pattern (array-like): The input pattern (A or B) for recalling the associated pattern.\n",
+        "    weight_matrix (numpy array): The trained weight matrix.\n",
+        "    threshold (int): The threshold for determining the output (-1 or 1).\n",
+        "\n",
+        "    Returns:\n",
+        "    output_pattern (numpy array): The recalled pattern associated with the input.\n",
+        "    \"\"\"\n",
+        "    # Calculate the net input by performing the dot product between the input pattern\n",
+        "    # and the weight matrix to obtain the activation of the corresponding output neurons.\n",
+        "    net_input = np.dot(input_pattern, weight_matrix)\n",
+        "\n",
+        "    # Apply the threshold to the activation values. Any values greater than the threshold\n",
+        "    # become 1, and those less than or equal to the threshold become -1. This creates a binary output pattern.\n",
+        "    output_pattern = np.where(net_input > threshold, 1, -1)\n",
+        "\n",
+        "    # Return the recalled output pattern\n",
+        "    return output_pattern\n",
+        "\n",
+        "# Define example patterns for set A (input) and set B (output)\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],  # Example input pattern in set A\n",
+        "    [-1, -1, -1, -1, 1],\n",
+        "    [-1, -1, -1, 1, 1]\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],  # Corresponding output pattern in set B\n",
+        "    [1, -1, -1, -1],\n",
+        "    [-1, -1, 1, 1]\n",
+        "])\n",
+        "\n",
+        "# Train the BAM by associating patterns from A with corresponding patterns in B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Recall pattern from A and print the associated pattern in B\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A by using the transpose of the weight matrix W\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Recall pattern from B and print the associated pattern in A\n",
+        "    a_recalled = recall_bam(b, W.T)  # W.T is the transpose of the weight matrix\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "b1aOPSN_hAYz",
+        "outputId": "6075d6cd-385c-4384-80ed-b36944f31bd3"
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [ 1  1 -1  1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [-1 -1  1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1  1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1  1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1  1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [-1 -1 -1  1  1]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "***PART B***\n",
+        "**Calculate the cross talk of A side**"
+      ],
+      "metadata": {
+        "id": "PYM3AAr5hpvc"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def normalize_vectors(vectors):\n",
+        "    \"\"\"\n",
+        "    Normalize each vector in a given list of vectors to have unit length (L2 norm).\n",
+        "\n",
+        "    Parameters:\n",
+        "    vectors (array-like): A list or array of vectors to be normalized.\n",
+        "\n",
+        "    Returns:\n",
+        "    numpy array: A list of normalized vectors where each vector has a norm of 1.\n",
+        "    \"\"\"\n",
+        "    # Normalize each vector by dividing it by its L2 norm (Euclidean norm).\n",
+        "    return np.array([v / np.linalg.norm(v) for v in vectors])\n",
+        "\n",
+        "def cosine_similarity(vec1, vec2):\n",
+        "    \"\"\"\n",
+        "    Compute the cosine similarity between two vectors.\n",
+        "\n",
+        "    Parameters:\n",
+        "    vec1 (numpy array): The first vector.\n",
+        "    vec2 (numpy array): The second vector.\n",
+        "\n",
+        "    Returns:\n",
+        "    float: The cosine similarity between vec1 and vec2, which is the dot product of the two vectors.\n",
+        "    \"\"\"\n",
+        "    # Compute the dot product of the two vectors, which gives the cosine of the angle between them\n",
+        "    return np.dot(vec1, vec2)\n",
+        "\n",
+        "def calculate_cross_talk(a_patterns, b_patterns):\n",
+        "    \"\"\"\n",
+        "    Calculate the cross-talk for each input pattern. Cross-talk refers to interference from\n",
+        "    other patterns during associative memory recall.\n",
+        "\n",
+        "    Parameters:\n",
+        "    a_patterns (array-like): Normalized set of input patterns (A).\n",
+        "    b_patterns (array-like): Normalized set of output patterns (B).\n",
+        "\n",
+        "    Returns:\n",
+        "    list: A list containing the cross-talk vectors for each input pattern in A.\n",
+        "    \"\"\"\n",
+        "    cross_talks = []  # List to store cross-talk results for each pattern\n",
+        "    n = len(a_patterns)  # Number of patterns\n",
+        "\n",
+        "    # Iterate over each pattern in A\n",
+        "    for i in range(n):\n",
+        "        # Initialize the cross-talk vector for the current pattern as a zero vector\n",
+        "        c_i = np.zeros_like(b_patterns[0])\n",
+        "\n",
+        "        # For each other pattern (k), compute its contribution to the cross-talk\n",
+        "        for k in range(n):\n",
+        "            if i != k:  # Avoid self-interaction (i.e., no cross-talk from itself)\n",
+        "                # Compute cosine similarity between A[k] and A[i]\n",
+        "                cos_a_k_a_i = cosine_similarity(a_patterns[k], a_patterns[i])\n",
+        "\n",
+        "                # Add the weighted output pattern B[k] to the cross-talk vector\n",
+        "                c_i += b_patterns[k] * cos_a_k_a_i\n",
+        "\n",
+        "        # Append the calculated cross-talk vector for pattern A[i]\n",
+        "        cross_talks.append(c_i)\n",
+        "\n",
+        "    # Return the list of cross-talk vectors\n",
+        "    return cross_talks\n",
+        "\n",
+        "# Train the BAM using the previously defined patterns A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Normalize the A and B patterns to unit vectors\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk for each input pattern in A using the normalized vectors\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "FmUB-flRhvU0",
+        "outputId": "6d526647-91d9-49fd-940d-6bde352f60b2"
+      },
+      "execution_count": 21,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Cross Talk for A[1]: [-0.2  0.4  0.2  0.2] with magnitude 0.5292\n",
+            "Cross Talk for A[2]: [-0.6 -0.6  0.6  0. ] with magnitude 1.0392\n",
+            "Cross Talk for A[3]: [ 0.2 -0.4 -0.2 -0.4] with magnitude 0.6325\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART C-I**"
+      ],
+      "metadata": {
+        "id": "g0ahp5LZik1s"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define new input patterns for A and output patterns for B\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],  # Original pattern 1 in A\n",
+        "    [-1, -1, -1, -1, 1],  # Original pattern 2 in A\n",
+        "    [-1, -1, -1, 1, 1],  # Original pattern 3 in A\n",
+        "    [1, 1, 1, 1, 1]      # New pattern added to A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],  # Original pattern 1 in B\n",
+        "    [1, -1, -1, -1],  # Original pattern 2 in B\n",
+        "    [-1, -1, 1, 1],  # Original pattern 3 in B\n",
+        "    [-1, 1, 1, -1]   # New pattern added to B\n",
+        "])\n",
+        "\n",
+        "# Train the BAM using the updated patterns A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Recall the associated pattern in B using the pattern from A\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A using the transposed weight matrix\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Recall the associated pattern in A using the pattern from B\n",
+        "    a_recalled = recall_bam(b, W.T)  # Use transpose of W for reverse recall\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# Normalize the updated A and B patterns for cross-talk analysis\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk for each input pattern in A using the normalized vectors\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "A4U4vU3lirJc",
+        "outputId": "eaf0e49a-e6c2-4bec-c1b4-a6154b5cf4bd"
+      },
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [ 1  1 -1  1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [ 1 -1 -1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1  1]\n",
+            "Input A: [1 1 1 1 1] -> Recalled B: [-1  1  1 -1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1 -1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1 -1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [-1 -1 -1  1  1]\n",
+            "Input B: [-1  1  1 -1] -> Recalled A: [1 1 1 1 1]\n",
+            "\n",
+            "\n",
+            "Cross Talk for A[1]: [-0.3  0.5  0.3  0.1] with magnitude 0.6633\n",
+            "Cross Talk for A[2]: [-0.3 -0.9  0.3  0.3] with magnitude 1.0392\n",
+            "Cross Talk for A[3]: [ 0.3 -0.5 -0.3 -0.3] with magnitude 0.7211\n",
+            "Cross Talk for A[4]: [-0.1  0.5  0.1  0.3] with magnitude 0.6000\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART C-II**"
+      ],
+      "metadata": {
+        "id": "5i9Uy-sxj9-M"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define the new input patterns (A) and output patterns (B)\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],  # Original pattern 1 in A\n",
+        "    [-1, -1, -1, -1, 1],  # Original pattern 2 in A\n",
+        "    [-1, -1, -1, 1, 1],  # Original pattern 3 in A\n",
+        "    [1, 1, 1, 1, 1],     # Original pattern 4 in A\n",
+        "    [1, -1, 1, -1, 1],   # New pattern 5 added to A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],     # Original pattern 1 in B\n",
+        "    [1, -1, -1, -1],   # Original pattern 2 in B\n",
+        "    [-1, -1, 1, 1],    # Original pattern 3 in B\n",
+        "    [-1, 1, 1, -1],    # Original pattern 4 in B\n",
+        "    [-1, -1, -1, 1],   # New pattern 5 added to B (corresponding to A[5])\n",
+        "])\n",
+        "\n",
+        "# Train the BAM using the new pattern sets A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Use the recall function to retrieve the corresponding pattern in B\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A using the transposed weight matrix\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Use the transpose of the weight matrix to recall the corresponding pattern in A\n",
+        "    a_recalled = recall_bam(b, W.T)  # Transpose of W for reverse recall\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# Normalize the updated A and B patterns to prepare for cross-talk analysis\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk for each input pattern in A\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results and their magnitudes\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Ad8fdrAAkDj5",
+        "outputId": "5e1c84ab-70c7-4449-c5a4-d2e462534abc"
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [1 1 1 1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [ 1 -1 -1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1  1]\n",
+            "Input A: [1 1 1 1 1] -> Recalled B: [-1  1  1 -1]\n",
+            "Input A: [ 1 -1  1 -1  1] -> Recalled B: [-1 -1 -1 -1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1 -1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1 -1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [ 1 -1 -1  1  1]\n",
+            "Input B: [-1  1  1 -1] -> Recalled A: [1 1 1 1 1]\n",
+            "Input B: [-1 -1 -1  1] -> Recalled A: [-1 -1 -1 -1  1]\n",
+            "\n",
+            "\n",
+            "Cross Talk for A[1]: [ 0.   0.8  0.6 -0.2] with magnitude 1.0198\n",
+            "Cross Talk for A[2]: [-0.4 -1.   0.2  0.4] with magnitude 1.1662\n",
+            "Cross Talk for A[3]: [ 0.4 -0.4 -0.2 -0.4] with magnitude 0.7211\n",
+            "Cross Talk for A[4]: [-0.2  0.4  0.   0.4] with magnitude 0.6000\n",
+            "Cross Talk for A[5]: [-0.2 -0.2  0.2 -0.6] with magnitude 0.6928\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART C-III**"
+      ],
+      "metadata": {
+        "id": "sPqCjLsZlcHk"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define the new input patterns (A) and output patterns (B)\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],   # Original pattern 1 in A\n",
+        "    [-1, -1, -1, -1, 1], # Original pattern 2 in A\n",
+        "    [-1, -1, -1, 1, 1],  # Original pattern 3 in A\n",
+        "    [1, 1, 1, 1, 1],     # Original pattern 4 in A\n",
+        "    [1, -1, 1, -1, 1],   # Original pattern 5 in A\n",
+        "    [-1, 1, -1, -1, -1], # New pattern 6 added to A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],       # Original pattern 1 in B\n",
+        "    [1, -1, -1, -1],     # Original pattern 2 in B\n",
+        "    [-1, -1, 1, 1],      # Original pattern 3 in B\n",
+        "    [-1, 1, 1, -1],      # Original pattern 4 in B\n",
+        "    [-1, -1, -1, 1],     # Original pattern 5 in B\n",
+        "    [1, 1, 1, -1],       # New pattern 6 added to B (corresponding to A[6])\n",
+        "])\n",
+        "\n",
+        "# Train the BAM using the new pattern sets A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Use the recall function to retrieve the corresponding pattern in B\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A using the transposed weight matrix\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Use the transpose of the weight matrix to recall the corresponding pattern in A\n",
+        "    a_recalled = recall_bam(b, W.T)  # Transpose of W for reverse recall\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# Normalize the updated A and B patterns to prepare for cross-talk analysis\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk for each input pattern in A\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results and their magnitudes\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Si4Z2bMZlfU7",
+        "outputId": "60e92e48-a037-4c1d-8216-149d70bc7128"
+      },
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [1 1 1 1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [ 1 -1 -1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1  1]\n",
+            "Input A: [1 1 1 1 1] -> Recalled B: [-1  1  1  1]\n",
+            "Input A: [ 1 -1  1 -1  1] -> Recalled B: [-1 -1 -1  1]\n",
+            "Input A: [-1  1 -1 -1 -1] -> Recalled B: [ 1  1  1 -1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1 -1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1 -1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [ 1 -1 -1  1  1]\n",
+            "Input B: [-1  1  1 -1] -> Recalled A: [ 1  1 -1  1 -1]\n",
+            "Input B: [-1 -1 -1  1] -> Recalled A: [ 1 -1  1 -1  1]\n",
+            "Input B: [ 1  1  1 -1] -> Recalled A: [-1  1 -1 -1 -1]\n",
+            "\n",
+            "\n",
+            "Cross Talk for A[1]: [ 0.1  0.9  0.7 -0.3] with magnitude 1.1832\n",
+            "Cross Talk for A[2]: [-0.3 -0.9  0.3  0.3] with magnitude 1.0392\n",
+            "Cross Talk for A[3]: [ 0.3 -0.5 -0.3 -0.3] with magnitude 0.7211\n",
+            "Cross Talk for A[4]: [-0.5  0.1 -0.3  0.7] with magnitude 0.9165\n",
+            "Cross Talk for A[5]: [-0.5 -0.5 -0.1 -0.3] with magnitude 0.7746\n",
+            "Cross Talk for A[6]: [ 0.9  0.1 -0.3 -0.1] with magnitude 0.9592\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART C-IV**"
+      ],
+      "metadata": {
+        "id": "agZHYe-JmTCy"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define the input patterns (A) and output patterns (B), including a new pattern in both sets\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],   # Original pattern 1 in A\n",
+        "    [-1, -1, -1, -1, 1], # Original pattern 2 in A\n",
+        "    [-1, -1, -1, 1, 1],  # Original pattern 3 in A\n",
+        "    [1, 1, 1, 1, 1],     # Original pattern 4 in A\n",
+        "    [1, -1, 1, -1, 1],   # Original pattern 5 in A\n",
+        "    [-1, 1, -1, -1, -1], # Original pattern 6 in A\n",
+        "    [1, 1, -1, -1, 1]    # New pattern 7 added to A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],       # Original pattern 1 in B\n",
+        "    [1, -1, -1, -1],     # Original pattern 2 in B\n",
+        "    [-1, -1, 1, 1],      # Original pattern 3 in B\n",
+        "    [-1, 1, 1, -1],      # Original pattern 4 in B\n",
+        "    [-1, -1, -1, 1],     # Original pattern 5 in B\n",
+        "    [1, 1, 1, -1],       # Original pattern 6 in B\n",
+        "    [-1, 1, -1, 1]       # New pattern 7 added to B (corresponding to A[7])\n",
+        "])\n",
+        "\n",
+        "# Train the BAM using the new pattern sets A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix W\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Use the recall function to retrieve the corresponding pattern in B\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A using the transposed weight matrix W.T\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Use the transpose of the weight matrix to recall the corresponding pattern in A\n",
+        "    a_recalled = recall_bam(b, W.T)  # W.T is the transpose of W for reverse recall\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# Normalize the updated A and B patterns for cross-talk analysis\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk effects for each pattern in A\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results and their magnitudes\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XVHCo4xUmX_Z",
+        "outputId": "934f08eb-f9bd-4956-ad7c-41a461dd4c70"
+      },
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [ 1  1  1 -1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [ 1 -1 -1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1  1]\n",
+            "Input A: [1 1 1 1 1] -> Recalled B: [-1  1  1  1]\n",
+            "Input A: [ 1 -1  1 -1  1] -> Recalled B: [-1 -1 -1  1]\n",
+            "Input A: [-1  1 -1 -1 -1] -> Recalled B: [ 1  1  1 -1]\n",
+            "Input A: [ 1  1 -1 -1  1] -> Recalled B: [-1  1 -1 -1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1 -1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1 -1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [ 1 -1 -1  1  1]\n",
+            "Input B: [-1  1  1 -1] -> Recalled A: [ 1  1 -1  1 -1]\n",
+            "Input B: [-1 -1 -1  1] -> Recalled A: [ 1 -1  1 -1  1]\n",
+            "Input B: [ 1  1  1 -1] -> Recalled A: [-1  1 -1  1 -1]\n",
+            "Input B: [-1  1 -1  1] -> Recalled A: [ 1  1  1 -1  1]\n",
+            "\n",
+            "\n",
+            "Cross Talk for A[1]: [ 0.4  0.6  1.  -0.6] with magnitude 1.3711\n",
+            "Cross Talk for A[2]: [-0.4 -0.8  0.2  0.4] with magnitude 1.0000\n",
+            "Cross Talk for A[3]: [ 0.4 -0.6 -0.2 -0.4] with magnitude 0.8485\n",
+            "Cross Talk for A[4]: [-0.6  0.2 -0.4  0.8] with magnitude 1.0954\n",
+            "Cross Talk for A[5]: [-0.6 -0.4 -0.2 -0.2] with magnitude 0.7746\n",
+            "Cross Talk for A[6]: [ 8.00000000e-01  2.00000000e-01 -4.00000000e-01  1.38777878e-17] with magnitude 0.9165\n",
+            "Cross Talk for A[7]: [-0.2 -0.2  0.2 -0.6] with magnitude 0.6928\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART C-V**"
+      ],
+      "metadata": {
+        "id": "zxA9gZcvf4hD"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define the input patterns (A) and output patterns (B), including a new pattern in both sets\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],   # Original pattern 1 in A\n",
+        "    [-1, -1, -1, -1, 1], # Original pattern 2 in A\n",
+        "    [-1, -1, -1, 1, 1],  # Original pattern 3 in A\n",
+        "    [1, 1, 1, 1, 1],     # Original pattern 4 in A\n",
+        "    [1, -1, 1, -1, 1],   # Original pattern 5 in A\n",
+        "    [-1, 1, -1, -1, -1], # Original pattern 6 in A\n",
+        "    [1, 1, -1, -1, 1],   # Original pattern 7 in A\n",
+        "    [-1, -1, -1, -1, -1] # New pattern 8 added to A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],       # Original pattern 1 in B\n",
+        "    [1, -1, -1, -1],     # Original pattern 2 in B\n",
+        "    [-1, -1, 1, 1],      # Original pattern 3 in B\n",
+        "    [-1, 1, 1, -1],      # Original pattern 4 in B\n",
+        "    [-1, -1, -1, 1],     # Original pattern 5 in B\n",
+        "    [1, 1, 1, -1],       # Original pattern 6 in B\n",
+        "    [-1, 1, -1, 1],      # Original pattern 7 in B\n",
+        "    [-1, -1, -1, -1]     # New pattern 8 added to B (corresponding to A[8])\n",
+        "])\n",
+        "\n",
+        "# Train the BAM using the updated pattern sets A and B\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Recall patterns from A to B using the trained weight matrix W\n",
+        "print(\"Recall from A to B:\")\n",
+        "for i, a in enumerate(A_patterns):\n",
+        "    # Use the recall function to retrieve the corresponding pattern in B\n",
+        "    b_recalled = recall_bam(a, W)\n",
+        "    print(f\"Input A: {a} -> Recalled B: {b_recalled}\")\n",
+        "\n",
+        "# Recall patterns from B to A using the transposed weight matrix W.T\n",
+        "print(\"\\nRecall from B to A:\")\n",
+        "for i, b in enumerate(B_patterns):\n",
+        "    # Use the transpose of the weight matrix to recall the corresponding pattern in A\n",
+        "    a_recalled = recall_bam(b, W.T)  # W.T is the transpose of W for reverse recall\n",
+        "    print(f\"Input B: {b} -> Recalled A: {a_recalled}\")\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# Normalize the updated A and B patterns for cross-talk analysis\n",
+        "A_norm = normalize_vectors(A_patterns)\n",
+        "B_norm = normalize_vectors(B_patterns)\n",
+        "\n",
+        "# Calculate cross-talk effects for each pattern in A\n",
+        "cross_talks = calculate_cross_talk(A_norm, B_norm)\n",
+        "\n",
+        "# Display the calculated cross-talk results and their magnitudes\n",
+        "for i, c_i in enumerate(cross_talks):\n",
+        "    # Print the cross-talk vector and its magnitude (Euclidean norm)\n",
+        "    print(f\"Cross Talk for A[{i+1}]: {c_i} with magnitude {np.linalg.norm(c_i):.4f}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "tJpL_tmKf7vY",
+        "outputId": "658b015d-e3fa-4a39-f16d-c87cfc224848"
+      },
+      "execution_count": 26,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Recall from A to B:\n",
+            "Input A: [-1  1  1  1 -1] -> Recalled B: [ 1  1  1 -1]\n",
+            "Input A: [-1 -1 -1 -1  1] -> Recalled B: [-1 -1 -1 -1]\n",
+            "Input A: [-1 -1 -1  1  1] -> Recalled B: [-1 -1  1 -1]\n",
+            "Input A: [1 1 1 1 1] -> Recalled B: [-1  1  1  1]\n",
+            "Input A: [ 1 -1  1 -1  1] -> Recalled B: [-1 -1 -1  1]\n",
+            "Input A: [-1  1 -1 -1 -1] -> Recalled B: [ 1  1 -1 -1]\n",
+            "Input A: [ 1  1 -1 -1  1] -> Recalled B: [-1  1 -1 -1]\n",
+            "Input A: [-1 -1 -1 -1 -1] -> Recalled B: [ 1 -1 -1 -1]\n",
+            "\n",
+            "Recall from B to A:\n",
+            "Input B: [ 1  1 -1  1] -> Recalled A: [-1  1  1 -1 -1]\n",
+            "Input B: [ 1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1 -1]\n",
+            "Input B: [-1 -1  1  1] -> Recalled A: [ 1 -1 -1  1  1]\n",
+            "Input B: [-1  1  1 -1] -> Recalled A: [ 1  1 -1  1 -1]\n",
+            "Input B: [-1 -1 -1  1] -> Recalled A: [ 1 -1 -1 -1  1]\n",
+            "Input B: [ 1  1  1 -1] -> Recalled A: [-1  1 -1  1 -1]\n",
+            "Input B: [-1  1 -1  1] -> Recalled A: [ 1  1  1 -1  1]\n",
+            "Input B: [-1 -1 -1 -1] -> Recalled A: [-1 -1 -1 -1  1]\n",
+            "\n",
+            "\n",
+            "Cross Talk for A[1]: [ 0.5  0.7  1.1 -0.5] with magnitude 1.4832\n",
+            "Cross Talk for A[2]: [-0.7 -1.1 -0.1  0.1] with magnitude 1.3115\n",
+            "Cross Talk for A[3]: [ 0.3 -0.7 -0.3 -0.5] with magnitude 0.9592\n",
+            "Cross Talk for A[4]: [-0.1  0.7  0.1  1.3] with magnitude 1.4832\n",
+            "Cross Talk for A[5]: [-0.5 -0.3 -0.1 -0.1] with magnitude 0.6000\n",
+            "Cross Talk for A[6]: [ 0.5 -0.1 -0.7 -0.3] with magnitude 0.9165\n",
+            "Cross Talk for A[7]: [-0.1 -0.1  0.3 -0.5] with magnitude 0.6000\n",
+            "Cross Talk for A[8]: [ 1.1 -0.7 -0.1 -0.3] with magnitude 1.3416\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**PART-D**"
+      ],
+      "metadata": {
+        "id": "Wrxev2DK5g2E"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def mutate_pattern(pattern, mutation_rate=0.2):\n",
+        "    \"\"\"\n",
+        "    Mutates the input pattern by flipping a percentage of bits based on the mutation rate.\n",
+        "\n",
+        "    Parameters:\n",
+        "    pattern (array-like): The original pattern to be mutated.\n",
+        "    mutation_rate (float): The proportion of the pattern to mutate (default is 20%).\n",
+        "\n",
+        "    Returns:\n",
+        "    mutated_pattern (numpy array): The mutated version of the input pattern.\n",
+        "    \"\"\"\n",
+        "    mutated_pattern = np.copy(pattern)  # Create a copy of the original pattern\n",
+        "    num_mutations = int(len(pattern) * mutation_rate)  # Number of bits to mutate\n",
+        "    mutation_indices = np.random.choice(len(pattern), num_mutations, replace=False)  # Randomly choose indices to mutate\n",
+        "    for idx in mutation_indices:\n",
+        "        mutated_pattern[idx] = -mutated_pattern[idx]  # Flip the sign at the selected index\n",
+        "    return mutated_pattern\n",
+        "\n",
+        "def hamming_distance(pattern1, pattern2):\n",
+        "    \"\"\"\n",
+        "    Computes the Hamming distance between two patterns (i.e., the number of differing bits).\n",
+        "\n",
+        "    Parameters:\n",
+        "    pattern1 (array-like): The first pattern.\n",
+        "    pattern2 (array-like): The second pattern.\n",
+        "\n",
+        "    Returns:\n",
+        "    int: The Hamming distance (number of differing bits).\n",
+        "    \"\"\"\n",
+        "    return np.sum(pattern1 != pattern2)  # Count number of different bits\n",
+        "\n",
+        "# Define the initial input-output pattern pairs for training\n",
+        "A_patterns = np.array([\n",
+        "    [-1, 1, 1, 1, -1],   # Pattern 1 in set A\n",
+        "    [-1, -1, -1, -1, 1], # Pattern 2 in set A\n",
+        "    [-1, -1, -1, 1, 1]   # Pattern 3 in set A\n",
+        "])\n",
+        "\n",
+        "B_patterns = np.array([\n",
+        "    [1, 1, -1, 1],       # Corresponding pattern 1 in set B\n",
+        "    [1, -1, -1, -1],     # Corresponding pattern 2 in set B\n",
+        "    [-1, -1, 1, 1]       # Corresponding pattern 3 in set B\n",
+        "])\n",
+        "\n",
+        "# Train the BAM by associating A and B patterns, resulting in a weight matrix W\n",
+        "W = train_bam(A_patterns, B_patterns)\n",
+        "\n",
+        "# Set random seed for reproducibility\n",
+        "np.random.seed(42)\n",
+        "num_runs = 20  # Number of random mutation-correction trials\n",
+        "\n",
+        "def array_to_string(arr):\n",
+        "    \"\"\"\n",
+        "    Converts a numpy array to a formatted string, ensuring consistent column width for better table presentation.\n",
+        "\n",
+        "    Parameters:\n",
+        "    arr (numpy array): The array to be converted to string.\n",
+        "\n",
+        "    Returns:\n",
+        "    str: Formatted string representation of the array.\n",
+        "    \"\"\"\n",
+        "    return str(np.array2string(arr, separator=',', formatter={'all':lambda x: f'{x:3d}'}))\n",
+        "\n",
+        "# Print table header\n",
+        "print(f\"{'Run':>3} | {'Original (O)':^21} | {'Mutated (M)':^21} | {'Hdist(O,M)':^10} | {'Corrected (C)':^21} | {'Hdist(O,C)':^10}\")\n",
+        "print(\"-\" * 91)\n",
+        "\n",
+        "# Perform multiple runs of mutation and correction\n",
+        "for run in range(num_runs):\n",
+        "    # Randomly select an original pattern from A_patterns\n",
+        "    original_index = np.random.choice(len(A_patterns))\n",
+        "    original_pattern = A_patterns[original_index]\n",
+        "\n",
+        "    # Apply mutation to the original pattern\n",
+        "    mutated_pattern = mutate_pattern(original_pattern)\n",
+        "\n",
+        "    # Perform bidirectional recall: recall B from mutated A, then recall corrected A from B\n",
+        "    recalled_B = recall_bam(mutated_pattern, W)\n",
+        "    corrected_pattern = recall_bam(recalled_B, W.T)  # Recall back to A using the transposed weight matrix\n",
+        "\n",
+        "    # Compute Hamming distances between the original and mutated patterns, and original and corrected patterns\n",
+        "    hdist_om = hamming_distance(original_pattern, mutated_pattern)\n",
+        "    hdist_oc = hamming_distance(original_pattern, corrected_pattern)\n",
+        "\n",
+        "    # Display the results in a formatted table\n",
+        "    print(f\"{run+1:3} | {array_to_string(original_pattern):^21} | {array_to_string(mutated_pattern):^21} | {hdist_om:^10} | {array_to_string(corrected_pattern):^21} | {hdist_oc:^10}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "iKbSSLfs5rDd",
+        "outputId": "5d16757a-ce80-45bd-b540-ad11cbea1f0f"
+      },
+      "execution_count": 28,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Run |     Original (O)      |      Mutated (M)      | Hdist(O,M) |     Corrected (C)     | Hdist(O,C)\n",
+            "-------------------------------------------------------------------------------------------\n",
+            "  1 | [ -1, -1, -1,  1,  1] | [ -1,  1, -1,  1,  1] |     1      | [ -1, -1, -1,  1,  1] |     0     \n",
+            "  2 | [ -1,  1,  1,  1, -1] | [ -1,  1,  1, -1, -1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n",
+            "  3 | [ -1, -1, -1,  1,  1] | [ -1, -1, -1, -1,  1] |     1      | [  1, -1, -1, -1,  1] |     2     \n",
+            "  4 | [ -1, -1, -1,  1,  1] | [  1, -1, -1,  1,  1] |     1      | [  1, -1, -1, -1,  1] |     2     \n",
+            "  5 | [ -1, -1, -1, -1,  1] | [ -1, -1,  1, -1,  1] |     1      | [ -1, -1, -1, -1,  1] |     0     \n",
+            "  6 | [ -1, -1, -1, -1,  1] | [ -1,  1, -1, -1,  1] |     1      | [ -1, -1, -1, -1,  1] |     0     \n",
+            "  7 | [ -1, -1, -1,  1,  1] | [  1, -1, -1,  1,  1] |     1      | [  1, -1, -1, -1,  1] |     2     \n",
+            "  8 | [ -1, -1, -1,  1,  1] | [  1, -1, -1,  1,  1] |     1      | [  1, -1, -1, -1,  1] |     2     \n",
+            "  9 | [ -1,  1,  1,  1, -1] | [ -1, -1,  1,  1, -1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n",
+            " 10 | [ -1,  1,  1,  1, -1] | [ -1,  1,  1,  1,  1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n",
+            " 11 | [ -1,  1,  1,  1, -1] | [  1,  1,  1,  1, -1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n",
+            " 12 | [ -1,  1,  1,  1, -1] | [ -1,  1,  1, -1, -1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n",
+            " 13 | [ -1, -1, -1,  1,  1] | [ -1, -1, -1,  1, -1] |     1      | [ -1, -1, -1,  1,  1] |     0     \n",
+            " 14 | [ -1, -1, -1,  1,  1] | [ -1, -1, -1,  1, -1] |     1      | [ -1, -1, -1,  1,  1] |     0     \n",
+            " 15 | [ -1, -1, -1, -1,  1] | [  1, -1, -1, -1,  1] |     1      | [  1, -1, -1, -1,  1] |     1     \n",
+            " 16 | [ -1, -1, -1, -1,  1] | [ -1, -1,  1, -1,  1] |     1      | [ -1, -1, -1, -1,  1] |     0     \n",
+            " 17 | [ -1, -1, -1,  1,  1] | [  1, -1, -1,  1,  1] |     1      | [  1, -1, -1, -1,  1] |     2     \n",
+            " 18 | [ -1, -1, -1, -1,  1] | [  1, -1, -1, -1,  1] |     1      | [  1, -1, -1, -1,  1] |     1     \n",
+            " 19 | [ -1, -1, -1,  1,  1] | [ -1, -1, -1,  1, -1] |     1      | [ -1, -1, -1,  1,  1] |     0     \n",
+            " 20 | [ -1,  1,  1,  1, -1] | [ -1,  1,  1, -1, -1] |     1      | [ -1,  1,  1,  1, -1] |     0     \n"
+          ]
+        }
+      ]
+    }
+  ]
+}
